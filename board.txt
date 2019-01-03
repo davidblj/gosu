@@ -1,0 +1,35 @@
+
+1.
+    Intro to Guideware Configuration - done
+    Intro to the data model - done
+    extending base entities - done
+    creating new entitites - done
+    subtypes - done
+    typelists - done
+    user interface archi - done
+
+2. 
+    Atomic widgets - done
+    Detail Views - done
+    Editable detail Views - done. 
+    Input sets - done (not quite in the lab)
+
+3. 
+    List views - (not quite)
+    Editable list views - (not the lab, missing Interactions_ext)
+    Modes - done
+    Introduction to locations
+    Popups
+
+4.
+
+
+5.
+
+
+6.
+
+
+
+
+TODO: answer every question in the presentations

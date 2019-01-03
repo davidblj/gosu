@@ -1,0 +1,238 @@
+commands:       gwta studio
+                gwta regen-dictionary
+
+accounts: aapplegate - gw
+          su - gw
+
+The insurance suite:
+
+    Policy: Create, modify, renew, and cancel policies
+    Billing: Bill policy holders for policies, and pay commissions for policies to producers
+    Claim: Process claims to provide payments to claimants when covered losses occur
+
+For each app, there is an specific functionality:
+
+    Claims: Financials, Group Access, Claim maturity, Integration mechanism.
+    Policy: Product model, job flow, role assignment, policy validation.
+    Billing: Billing plan, Payment plan, Charge Pattern, Deling Workflow. 
+
+
+Guidewire supports the following application servers: WebSphere, WebLogic, Apache Tomcat, JBoss EAP
+Jetty (for development only)
+
+Guidewire supports the following RDBMs: Oracle Enterprise, Microsoft SQL Server, H2 for development only
+
+3 tiers:
+    data tier: configured by "entities"
+    app tier: configured by gosu
+    ui: PCFs configure presentation tier
+
+
+--- Data models ---
+
+
+Data model entity: is an abstract definition of a group of business objects used by the application.
+a data model store the data in database table named after the entity.
+    
+    Exceptions are: Entities that share the columns in an entity table such as subtype entity
+    Virtual, non-persistent entities do not save data to the database.
+ 
+    They consist on entities, entity fields (Data, Foreign key, Array key, Type key), data fields (single value that does not
+    reference another object or table: String, datetime, bit, integer),  typelists,  and typekeys.
+
+- Fields of supertype entities are inherited by subtype entities
+
+- Supertype parent table stores all instances of itself AND of subtype data
+
+    Contains parent fields and all subtype fields
+    Irrelevant fields are null for specific subtypes
+    Subtype column identifies subtype
+
+Types:
+
+Foreign key stores a reference to a related object in the data model
+Array key fields: stores references to a set of related objects in the data model. They are not store in the database and
+ they are populated at runtime by quieries 
+Typelist and typekey: a type key references a value in a type list. A type list is a predefiend list of values.
+
+Referencing:
+
+    fields:                                 object.field
+    field on related object:                object.foreignKey.field
+    array:                                  object.array
+    referencing field at subtype level:     (supertype as subtype).field
+
+
+-- Extending entities ---
+
+
+Application entities are specific to application
+
+    Claim
+    Policy
+    Producer
+
+Platform entities are common to all Guidewire applications
+
+    Activity
+    User
+
+Entities are in xml files (ETI as entities, ETX as entity extensions and EIX as internal entity extensions). 
+These files are located in config\extensions\entity (for ETI and ETX files) and config\medatada\entity (for 
+ETI and EIX).
+
+NOTES: extensions are groupings ?. Internal extensions are written with a suffix:  extension_Ext. Internals dont.
+
+When you edit an extension, you need to re deploy it. Yo can do that by issuing: gwta dev-stop and gwta dev-start or restarting
+the execution in intellij.
+
+You can't make extensions for entities through the GUI for ETI and ETX files. You need to edit them directly.
+
+
+--- Creating entities ---
+
+
+    ETI files can be created by customers.
+    ETI and EIX files are application exclusive.
+    ETI FILES are platform exclusive.
+
+Arrays: Collection of pointers to instances of some other entity that is maintained by code during runtime Requires reverse foreign key
+If entity A has array of entity B, then entity B must have foreign key pointing to entity A.
+
+Entity names: Useful for displaying names in user interface. Entity names exist for many base and application entities.
+arrays.
+
+Foreign key: its a pointer to a single instance of some other entity. And is maintained by a foreign key column in the database table.
+
+One to one: defines a single-valued association to another entity that has a one-to-one cardinality. Provides a reverse pointer to an 
+entity that is pointing at the <onetoone> entity through a foreign key. ¿How do i achieve this?
+
+One to many: You need to create a foreign key in the many relationship "table", and an array in the "one" relationship table.
+
+Many to many: It requires an entity of type versionable that have 2 or more non-nullable foreign keys, and an unique index. To access 
+the many-to-many relationship, add an array to one or both entities in the relationship ?.
+
+circular relationships: a link between one entity to another or to self. Ensures the safe ordering of data insertion and deletion 
+in cases where cyclic references prevent safe ordering ?.
+
+delegates: a virtual entity consisting of database fields, or methods, or both that can be reused by multiple entities. It Bundles 
+together data and functionality that is needed by multiple unrelated entities. 
+
+
+--- subtypes ---
+
+
+A subtype is an entity that is a child to a supertype entity and inherits all fields from the supertype.
+
+A subtype is read from the xml as <subtype> or <extension>. In the GUI you need to add a subtype element. In the details, you need
+to specify 
+
+A subtype is stored as an id in a column of the database. That id references a table of typelists (e.g. AB_person, and ABTL_person). 
+Since a entry in the database can be subtyped from different supertypes, one column that does not belong to this row supertype, is set
+to null. 
+
+In the UI, you may visualize this tree by looking at the supertype. But, do remember that the supertype wont inherit its subtype
+entity fields (the ui rather shows what fields can you access from the supertype entity). The subtype entities are not displayed
+with his inherited fields (wtf).
+
+You are unable to inherit from multiple supertypes, just one at a time (as it doesn't make sense).
+
+creating subtype extensions:  as usual, you may click the entity folder, or you may right click the entity (the 
+entity must be a subtype and an extension). You can't do it through the GUI if you are under the folder extensions/entity/ folder, you 
+must edit the xml directly. You must name the new entity with a "*_Ext" posfix.
+
+
+--- typelist ---
+
+
+A typelist is a list of defined values. Defined values often used to constrain user input. When rendered in UI, typically
+appears as dropdown list. 
+
+- located under the Metadata (tti and tix extensions) and Extensions (tti and ttx extensions) Typelist folder. The metadata 
+holds read only files, and the extensions folder holds custom and editable files.
+
+A typelist comes in 3 forms
+
+Internal: read only, cannot be modified or extended and is used for internal base app logic
+Extendable: used in the base application and it can be modified as a typelist or typelist extensions
+Custom: created as a part of a custom configuration. 
+virtual typelist: a typelist that is not exposed and hence not available in a "physical" file
+
+- As usual, if you are going to exted a typelist, you must name its typecodes with the "*_Ext" posfix.
+
+When you are defining a type code, you encounter 3 primary fields: code, name and desc. code behaves like
+an internal unique id, "name" is what is displayed to the user interface and "desc" is what the data dictionary
+displays. 
+
+defining typekey fields: you need to add a "typekey" element to an entity or entity extension (after you have created the typelist).
+
+you may additionally add:
+    typefilter: a new column that groups codes in this typelist based on a criteria.
+    category: a new column that groups a child list on this type list. These are used to restrict or filter dependent 
+              drop-down lists.
+
+creating typelist extensions: you can create typelist extensions if you are under the extensions folder. You may right
+click the typelist metadatafolder or any typelist to create a new extension.
+
+
+---  UI Architecture --- 
+
+
+The PCF (Page Configuration File) object model is a proprietary application framework used to create all Guidewire 
+end-user interfaces. There are 2 categories: widgets (dispalyable elements) and locations (navigable places). PCFs 
+are XMLs. They may also: Define child containers, Reference other containers, Include atomic widgets
+
+For widgets, we have: 
+
+    Atomic widget: an atomic piece of the user interface that displays individual data values or executes individual actions
+                   these are inputs, cells and buttons.
+    Container widget: collection of atomic widgets and other container widgets.
+                      these are: Screen, Input set, Card View Pael, Detail View Panel, List Detail Panel, List View Panel
+    Screen: Every atomic widget, primary view, and secondary view is contained (directly or indirectly) in a screen. A
+            Screen forms the bridge between what the application displays and how users work and navigate in the application.
+    Primary view: a single object (and its related data) or set of objects.
+    Secondary view: a secondary view organizes primary views, its a collection of primary views.
+
+
+Detail view panel: allows the user to view or create a record.
+list view panel: allows the user to view information about multiple records at the same time.
+Input sets: ?
+
+widgets.png shows the hierarchy between these elements.
+
+As for locations, we have
+
+    Location Groups
+    Pages
+    Wizard
+    Popup
+    Worksheet
+    Forward
+    Exit Point
+
+These elements are all inside the screen box (Widgets.png). A location references a specific screen.
+
+The overall hierarchy is reviwed at "PCF hierarchy.png". Every Container Widget and Location element can be
+a parent element in the PCF element.
+
+You can: debug the UI by pressing ALT + SHIFT + I in you web browser. Reload PCFs by pressing ALT + SHIFT + L.
+take out the widget inspector by pressing ALT + SHIFT + W. Open the canvas by pressing ALT + SHIFT + E
+
+PCF files are under the Config/Page Configuration/pcf folder. PCF file suffix examples:
+
+    DV – detail view panel
+    LV – list view panel
+    InputSet – input set
+    CV – card view panel
+    LDV – list detail panel
+    Screen – screen
+    LG – location group
+    Wizard – wizard
+
+You can view and edit page configuration files (PCF) on this path: /config/web/pcf. You are provided with 
+PCF canvas, a toolbox tab, an structure tab, and a properties window.
+
+following these steps you will reaseure that everything you did is ok (in other words, deploying a PCF change): 
+
+    build -> make project (compiles modified files).
+    ALT + SHIFT + L

@@ -1,0 +1,191 @@
+
+--- Atomic Widgets ---
+
+
+An atomic widget is composed of buttons, cells, an input layouts. 
+
+Input and cell atomic widgets often bind to data from variable object(s)
+defined in its parent container. Object data can be Data backed (database) or a virtual property.
+
+    Requiered fields: 
+
+id: unique name (label property), it must be unique within a given PCF
+value property: displayed data, its the value of the property. Only data fields are editable
+label: the label. This label should not be hardcoded, but it should point to a "locale string" (config/localization/en_US)
+
+    inside the data field, you access the object fields through the "dot notation", remeber to cast objects 
+    when you try to access a subtype field
+
+There is a Generic input widget that dynamically determines input type based on value data type (boolean, date, typekey, text). 
+For a complete list on data types, take a look at "data types.png".
+
+Widgets can be static or dynamic. Dynamic widgets evaluates to expressions. For you to create a dynamic widget, you need that:
+
+    editable requires boolean expression
+    label requires a string expression
+    value requires an object expression
+
+The documentation for all widget properties is found at: file:///C:/Guidewire/TrainingApp/modules/pcf.html
+
+
+--- Detail View Panels ---
+
+
+A Container widgets is a collection of atomic widgets.  A detail view panel is a container widget that allows the user to view|
+and edit data for that object. 
+
+    A detail view panel often has a root object. If referenced, a parent container must pass the root object to the detail view panel.
+    A detail view panel must have at least one input column to store input widgets.
+
+You can make a reusable PCF file. For that, the filename must end with "DV". You can not re use inline widgets. 
+
+creating detail view panels: just right click a folder under config/Page Configuration/pcf. In the context menu, click on Detail View.
+                             You must also specify the variable object (type field). The name is the id that is given to that object
+                             instance.
+                             
+A reference widget is used to embed a pfc file as a child container. A PanelRef widget can reference a Detail View Panel
+List View Panel, a Card View Panel, and a List Detail Panel. The panel reference needs a variable "def", which is the panel name to reference
+and pass as a root object: eg 
+
+    ViewPanelDV(variable)
+
+
+--- Editable view panel ---
+
+
+An screen is able to make editable all of his children. By default, all containers are editable. For widgets to be editable, 
+its parent container must also be editable (think of it like a hierarchy). You need to add a toolbar as a top level component 
+in an screen component. That toolbar must contain an "edit buttons" component.
+
+Use CurrentLocatio.InEditMode to set dynamically the availability of an atomic widget (?).  
+
+
+--- Input sets ---
+
+
+An input set is a named group of widgets 
+    Can contain atomic widgets 
+    Can be reused by detail view panels
+    Cannot be referenced by secondary views
+    Cannot have a toolbar directly associated with it
+
+Input sets can contain:
+    Input widgets
+    Input dividers
+    Label widgets 
+    List view panels
+    Other input sets!
+
+cannot contain: Input columns
+
+An input set can be reusable, but its filename must end with "InputSet", it must recieve a root object (like a detail view does). 
+You may also use it as an inline widget which inherits from its parent object.
+
+You can set the visibility or editability on an Input set dynamically, this is called shared logic.
+
+The steps to add is pretty much like before: do create a file with the inputset extension. In a page or a CV file, use a inputSetRef.
+Remember to passdown the root object.
+
+
+--- List views ---
+
+
+A list displays a row widgets. This is done through a row iterator, which is a function that operates upon on array of the root
+object or a query result. And just like before, you can create a file (receiving a root object) or an 
+inline widget (with an inherited parent object). A row widget is composed of cell widgets. You need to add cell widgets in to the row.
+These cell widgets must reference the current object property. 
+
+For you to reference a list view panel, you can to use a PanelRef (unlike the previous section: an InputRef). You have a second
+option, a list view input. A list view input automatically applies paging. Nonetheless you can add the toolbar. The toolbar must be
+outside the list view, and inisde the screen or page that references this view.
+
+list view panel - Row iterator - iterator
+
+
+--- Editable list views ---
+
+
+Editable list view panels enable users to create new rows, remove rows, and edit existing rows through iterator buttons.
+
+For a cell to be editable, only the row iterator needs to be explicitly set to editable. List view panel and row can inherit 
+"editable" from parent.
+
+Properties of "row iterator" govern functionality of iterator buttons (you need to set "toAdd" and "toRemove" in the 
+iterator properties, these are method calls).  that is, if you link them first (right click the iterator buttons), and
+enable the checkbox behaviour. "Iterator buttons" is a component that you drag and drop into a toolbar (this toolbar is inside
+a PanelRef component).
+
+¿specify the variables need it to set a list view?
+
+
+--- mode ---
+
+
+"Mode" is a property used for PCFs that are appropriate for a given business scenario. This happens when you need to
+modify a component for each case scenario. Its cumbersone to logically display an specific component depending on
+a given case escenario. 
+
+Modes can be used with:
+    Detail view panels 
+    Card view panels
+    Input sets
+    List view panels
+    Info bars
+    Screens
+    Menu item sets
+    ...and more (refer to documentation)
+
+Usage instructions:
+
+    1. Create modal PCF set
+    2. For each PCF, specify its mode(s)
+    3. Ensure there is one PCF with "default" mode (otherwise an error is thrown)
+    4. Ensure each PCF has identical required variables (in number, type, and order)
+    5. Create the reference to modal PCFs (specify the reference in PanelRef, InputSetRef, etc: eg
+       anABContact.Subtype. Note that "Subtype" is not entity 'specific', we are just referencing the 
+       current subtype for the current object).
+
+Modes can reference subtypes. You referene subtypes using the pipe operator, eg: 
+
+    ABperson | ABDoctor | ABAttorney
+
+PCFs are listed in the file tree as <ID>.<MODE>, eg:
+
+    ABPersonSubtypeInfoInputSet.ABDoctor
+
+
+--- locations ---
+
+
+A location is a PCF element that a user can navigate to.
+
+    pages: A single screen
+    locationGroups: is a collection of pages used  to view or modify data Each group has single info bar, actions menu, 
+                    and side bar
+    wizard: A wizard is an ordered collection of screens used to execute a complex business process
+            It contains a single info bar, actions menu, and a side bar. It also Includes a toolbar with Back and Next buttons.
+    popup: contains a single screen and returns the user to the previous location once 
+           the popup is closed.
+    worksheet: contains a single screen rendered in the workspace frame.
+    forward: contains logic to execute before navigating to another location. It often involves deciding which location 
+             to navigate to.
+    exit points: a URL outside of the Guidewire application.
+    entry point: reference used by widgets to navigate to a given location.
+
+Most atomic widgets have an action property that can be set to a Gosu statement
+When set, atomic widget becomes clickable When clicked, Gosu statement is executed.
+
+These are the steps to enable the navigation: 
+
+    1. Open destination location's PCF file
+    2. Determine relevant entry point
+    3. Specify widget's action property
+    4. Deploy PCFs
+
+Locations have methods used to navigate to them
+
+    go(): Renders location in  same frame as source widget
+    goInWorkspace(): Renders location in workspace frame 
+    push(): Renders location in same frame as source widget and retains previous location so that it can be returned to.
+
+For a more detailed resource, take a look at the "location comparisons.png" file. 
