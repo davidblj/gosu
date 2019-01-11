@@ -12,22 +12,37 @@
     Atomic widgets - done
     Detail Views - done
     Editable detail Views - done. 
-    Input sets - done (not quite in the lab)
+    Input sets - done (the lab ? not quite)
 
 3. 
-    List views - (not quite)
+    List views - (the lab ? not quite)
     Editable list views - (not the lab, missing Interactions_ext)
     Modes - done
-    Introduction to locations
-    Popups
+    Introduction to locations - (null challenge unresolved)
+    Popups - UNDONE
+    Introduction to Gosu - done
 
 4.
-
+    Arrays - done
+    Bussiness rules - done
+    Enhancements -  (lab reading)
+    Gosu classes - (lab reading)
+    Partial Page Update - (just half of the lab, the "interactions" page is missing)
 
 5.
-
+    Popups 2 - UNDONE
+    Gosu queries - done (lab reading)
+    Script parameters - done (lab reading)
+    Entity names - done (lab reading, depends: creating entities, typelists, editable list view panels, create new objects
+                         with popups)
+    Dependent dropdowns - doing (lab reading (i barely understood the implementation) depends on: )
+    Dynamic dropdowns - done (lab reading)
+    Field level validation - done
+    Introduction to guideware studio - skipped
+    Internationalization features - skippped
 
 6.
+
 
 
 

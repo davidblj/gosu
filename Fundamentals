@@ -1,5 +1,10 @@
-commands:       gwta studio
-                gwta regen-dictionary
+commands:   gwta studio
+            gwta regen-dictionary  ()
+            gwta regen-gosudoc  (build/gosudoc)
+
+carlmeba/Martes2018
+
+UI: ABContactDetailsCompanyDV (a good usage example of UI elements)
 
 accounts: aapplegate - gw
           su - gw
@@ -158,7 +163,7 @@ Extendable: used in the base application and it can be modified as a typelist or
 Custom: created as a part of a custom configuration. 
 virtual typelist: a typelist that is not exposed and hence not available in a "physical" file
 
-- As usual, if you are going to exted a typelist, you must name its typecodes with the "*_Ext" posfix.
+- As usual, if you are going to extend a typelist, you must name its typecodes with the "*_Ext" posfix.
 
 When you are defining a type code, you encounter 3 primary fields: code, name and desc. code behaves like
 an internal unique id, "name" is what is displayed to the user interface and "desc" is what the data dictionary

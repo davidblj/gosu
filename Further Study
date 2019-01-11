@@ -1,0 +1,260 @@
+
+
+--- Gosu queries ---
+
+
+A Gosu query specifies the  entity and criteria associated with the entity
+to retrieve from the Guidewire application. 
+
+Use Gosu queries to retrieve  one or more objects Referenced by foreign key relationships,
+NOT in an array relationship
+
+    Create the query object using the make() method
+    Create the results object using the select() method
+    Process the results of the query as needed
+
+e.g.
+
+    uses gw.api.database.Query 
+    
+    var output = ""
+    var queryObj = Query.make(entity.ABContact)
+
+    for (anABContact in resultsObj) {
+      output += anABContact.DisplayName + "\n"
+    } 
+
+    print(output)
+
+
+Printing SQL statements
+
+    var queryObj = Query.make(entity.ABContact).withLogSQL(true)
+    output += queryObj.toString())
+    print(output)
+
+Filtering
+
+   var queryObj = Query.make(ABPerson)
+   queryObj.compare("LastName", Relop.Equals, "Andy")               // camparisons can be made on
+                                                                    // Strings, Integers, booleans, dates,
+                                                                    // typekey and null
+    // queryObj.compare(ABPerson#LastName, Relop.Equals, "Andy")     // feature literal
+    // you can add as many compare statements as you want, this is equal to an "and" statement
+    // an or statement goes like this:
+    /* queryObj.or(\ criteria -> {
+        criteria.compare(ABPerson#LastName, Relop.Equals, "Andy" )
+        criteria.compare(ABPerson#FirstName, Relop.NotEquals, "William")
+    }) */   
+
+   var resultsObj = queryObj.select()
+
+Various kinds of feature references
+
+    Property
+    Method
+    Directly invoke/get/set
+
+Syntax: 
+
+    ABContact#LastName
+    ABContact#addContactNote()
+
+The system intrepetates a Null value for a null property value, or a property that doesn't exist in 
+the the object.
+
+Thre are more comparisons functions:
+
+    between()
+    compareIgnore()
+    contains()
+    subselect()
+    startsWith()
+
+result set count:
+
+   var queryObj = Query.make(ABPerson)
+   var count = resultsObj.Count
+
+sort count:
+
+    var resultsObj = queryObj.select()
+    resultsObj.orderBy( \ row -> row.LastName)
+
+Querying for one result:
+
+    var queryObj = Query.make(ABCompany)
+    var resultsObj = queryObj.select().AtMostOneRow
+    output += resultsObj.EmailAddress1
+
+
+--- Script parameters ---
+
+
+A script parameter is a global variable for a Guidewire application. 
+
+2 types; file and entity. Files are in xml and entities in eti files. Scripts are located under config/resources
+
+<script-prameterPack>
+    <ScriptParameterPack 
+    ParamName="MaximumViewedContacts"
+    ParamType="integer"> 
+    <ParamValue>5</ParamValue> 
+   </ScriptParameterPack> 
+<script-prameterPack>
+
+For a script to be loaded, you need to either restart the server, or reload all pfcs.
+
+You reference the parameters inside the codes by calling:
+
+     value = ScriptParameters.MaximumViewedContacts 
+
+You can edit parameters in the UI, in the following route when you are logged as a su:
+
+    Administration ->  Utilities ->  Script Parameters
+
+
+--- Entity names ---
+
+
+An entity name defines how to display a name for an instance of a given entity. An entity name file contains
+at least one default entity name type definition. An entity file is just a definition on how to name an entity,
+
+Entity names are under the config/entity names. Within the entity file name, you can access the entity properties,
+or table clumns, to say so, and code your own logic there. 
+
+The entity file name must follow the entity name
+
+Variables are defined inside a table. Foreign keys must check the checkbox "use entity name".
+If you are going to use a typekey in the retur expression, use its "displayName".
+
+If you want to deploy entity, you must restart the server, or reload al pfc's.
+
+This is how you access the entity name type:
+
+    uses gw.api.database.Query 
+
+    var query = Query.make(Address).select() 
+    for (address in query) { 
+
+        var output : String 
+        // Default, use entity.DisplayName 
+        output += address.DisplayName 
+
+        // Internal property for Full 
+        output += address.FullDisplayName 
+
+        // getDisplayName() is Default 
+        output += address.getDisplayName() 
+
+        // getDisplayName("Full") for Full 
+        output += address.getDisplayName("Full") 
+
+        // getDisplayName("Short") for Short. Short is custom 
+        output += address.getDisplayName("Short") 
+        print(output) 
+    } 
+
+
+--- Dependant dropdown lists ---
+
+
+A dependant drop down list is a list that depends on a parent field to show its contents.
+
+    - Typekey keyfilters specify the dependency relationship.
+    - Typelist category and categorylist filters specify the filtering
+
+
+1. In the child typelist you define a category filter (which is a list of typecodes that will
+contain a "category" sub value under the value of another typelist code) and a "categorylist filter"
+which selects a parent typelist. 
+
+2. Open the entity (?) and select the typekey for the child typelist and add a new 
+keyfilter that references the parent typekey.
+
+3. Add a typekey input widget that points (in the value) to the contact typekey. 
+
+    channelType_Ext -> category under channelDirection_Ext
+    InteractionReason_Ext -> category under channelType_Ext
+
+    Interaction_Ext (typekey (channelDirection) to channelDirection_Ext and 2 typekeys with key filters)
+    input widget to channelDirection_ext (channelDirection)
+
+
+--- dynamic dropdwons ---
+
+
+A dynamic dropdown is a list of values populated from run-time data. Values typically come from an array of root
+object entities, but can come from any list (such as queries).
+
+For array based dynamic dropdowns, we may use range widgets. There are 2 types; a range input used for detailed
+views and range cells for list views. You just put the object array in the input widget value, 
+
+
+--- field level validation ---
+
+
+unlike "validation" which prevents the user to save invalid business data, "field level validation" is tied to
+to one or more specific data fields: in the user interface, and the data model (entity field validators and field types)
+
+(In the UI) A widget can use a regex, an inputMask, and a validationExpression to make validations.
+
+    regex:
+        - After a user navigates to a page or clicks Update, the widget property expression is evaluated. A regex shows an
+        invalid field warning, and an info bar message err. Data is not comitted until that field is valid.
+        - available on text inputs, and text cells.   
+
+    input mask:
+        - After a user navigates to a page or clicks Update, the widget property expression is evaluated. An input mask
+          shows a watermark. There is no restriction to comit the data.
+        - available on text inputs, and text cells.   
+        - No custom error message.
+
+    validationExpression:
+        - Before the data is submitted, the expression is evaluated. It shows a field error, and an info bar message error.
+          Data is not comitted until that field is valid.
+        - Specify a conditional gosu expression. It Must return a string or null value.
+        - No custom error message.
+
+        A validation expression is gosu code, unlike a regex and an input mask, e.g:
+
+            (anABContact as ABPolicyCompany).CollateralAmount  > 9999 
+                ? "Amount less than 10000"          // error message is displayed, data remains uncomitted
+                : null                              // data can be comit
+
+
+    Data types:
+
+data types ensure that "types" are valid, they are API enforced. These validations are stored in xml config files (.dti files):
+
+    /config/datatypes
+
+tags:
+
+    - DataTypeDef specifies a implementation type and the value type. Its dataype is defined by the entity type property.
+    - ParameterDef specifies possible parameters
+
+
+    Validators
+
+You can also use field validators. A field validator defines a common pattern. These field validators can be associated with
+one or more entities. 
+
+These are stored under 
+
+    /config/fieldvalidators/fieldvalidators.xml
+
+they have the following syntax
+
+<ValidatorDef 
+    description="Training.Validator.RoutingNumber"      <!-- display key specification -->
+    input-mask="###-###"                                <!-- visualization formatting -->
+    name="RoutingNumber"                                <!-- validator id (used in the entity definition) -->
+    value="[0-9a-zA-Z]{3}-[0-9]{3}"/>                   <!-- regex -->
+
+You add a validator through a ColumnParam with its name "validator" and its value as the name of the validator.
+
+To deploy your changes, you restart the server or reload all PCFs.
+    
+    You can add global messages with LocationUtil (addRequestScopeInfo, addRequestScopeWarning, addRequestScopeError)
+    , or by throwing an exception "DisplayableException".
