@@ -258,3 +258,4 @@ To deploy your changes, you restart the server or reload all PCFs.
     
     You can add global messages with LocationUtil (addRequestScopeInfo, addRequestScopeWarning, addRequestScopeError)
     , or by throwing an exception "DisplayableException".
+

@@ -41,7 +41,22 @@
     Introduction to guideware studio - skipped
     Internationalization features - skippped
 
-6.
+Integration
+
+1.
+    Introduction to Guidware integration - done
+
+2. 
+    Gosu Queries - done
+    Gosu for integration - done
+    Gosu bundle - 
+
+...
+4. 
+    publishing guidewire web services
+    consuming guidewire web services
+    
+
 
 
 

@@ -1,0 +1,250 @@
+
+
+--- introduction ---
+
+
+variable declaration:
+    var variableName : datatype = initialValue
+
+unboxed primitives:
+    int, char, byte, short, long, float, double, boolean
+
+notes: 
+
+    - Primitive types cannot hold the null value
+    - Primitive types coerced to non-primitive versions (null is transformed into a 0)
+    - semicolons are not required
+
+operators:
+
+    &&, || , !=, ==
+
+prints:
+
+    print(stringVar)
+
+imports:
+
+    uses libraryPath
+
+instatiation:
+
+    var rectangle = new Rectangle()
+
+    This can be: Gosu class, Java class, Array, Guidewire entity type
+
+subtyping:
+
+    You can coerce from a subtype to a supertype like you would normally access any property.
+    You can't coerce from a supertype to a subtype, you must cast the reference into a subtype, e.g:
+
+        (object as childSubtype).propertyOrMethod
+
+An entity's Subtype property is a typekey field of the entity subtypes
+
+    var out : String = "" 
+    var anABContact = ta.QueryUtil.findContact("70")    
+
+    if (anABContact.Subtype==typekey.ABContact.TC_ABPERSON) { 
+        out += (anABContact as ABPerson).Gender 
+    } 
+
+    if (anABContact.Subtype==typekey.ABContact.TC_ABPERSONVENDOR) { 
+        out += (anABContact as ABPersonVendor).SelfEmployeed_Ext 
+    }
+
+    if (anABContact.Subtype==typekey.ABContact.TC_ABDOCTOR) { 
+        out += (anABContact as ABDoctor).Specialty 
+    } 
+
+You can replace the previous "if" conditions with the typeIs operator. Using the typeis operator, you don't
+need to use the "downcast" operator
+
+    if (anABContact typeis ABPerson) { 
+        out += anABContact.Gender 
+    }
+
+
+--- Arrays ---
+
+There are 3 types of arrays:
+
+    Data models entity array: <array> <foreingkey>
+    Derived API entity array: entity enhancement or guideware api
+    Gosu datatypes and object arrays: array definition
+
+length: 
+
+    array.length
+
+iterating is like:
+
+    for (element in array) {
+        ... element.property
+    }
+
+You may also add an index into the iteration:
+
+    for (element in array index i) {
+        ... element.property
+    }
+
+You can execute methods in an array iterator (toAdd, and toRemove properties). The methods you choose to
+add must act accordingly, they can be anything, nevertheless.
+
+Some array method arugments requieres blocks:
+
+    array.where(\ element -> boolExpression)
+
+Common methods
+
+    hasMatch(condition) - returns true if a match is found
+    countWhere(condition) - count the amount of elements where condition is true
+    firstWhere(condition) - retrieve the first element where condition is true
+    where(condition) - filter the array where condition is true
+
+
+---  business rule ---
+
+
+A business rule performs an action based on a condition for a given entity when a specific event occurs to 
+an instance of that entity. 
+
+e.g:
+
+    Billing center: Verify that account is valid before committing it to database. Triggered when account is created or modified.
+    Activity escalation rules: Escalate activity that is open for too long. Triggered when activity is open past its escalation date.
+    Claim: Assign given claim to a group and user. Triggered when claim is created or needs reassignment.
+
+To cereate a bussines rule, we need a root entity, a unique name, a condition reslving to true or false, and an action.
+
+Rule set category 
+
+    A rule set category is a collection of rules sets that have common high-level business purpose. 
+        (e.g. Event messaging, Preupdate, Validation).  These rulesets are located under config/rulesets folder.
+
+Rule set
+
+    - A rule set is a type of Gosu class that represents a collection of rules that are attached to the same entity and share common triggers.
+    - A rule can have child rules. 
+
+
+    if (aBContact.isFieldChanged(ABContact#WorkPhone) {
+        var origValue = aBContact.getOriginalValue(ABContact#WorkPhone)
+    }
+
+When a trigger is fired, Guidewire executes all rules in the rule set:
+
+    They are executed in order of hierarchy.
+    If thre parent rule condition is true, then the parent action is executed first, a child rules are executed next.
+    If the child rule contains an 'exit' command, guideware stops executing rules (actions.exit).
+    If the parent is inactive (checbox), all of its children are inactive. 
+
+You need to restart the server to load new RuleSets. You can debug rules.
+
+This is an example of a ruleset:
+
+USES
+uses gw.api.util.DateUtil
+
+CONDTION (aBContact: entity.ABContact.actions)
+return aBContact typeis ABDoctor
+and aBContact.Specialty == null
+
+ACTION (...)
+var aFlagEntry = new FlagEntry()
+aFlagEntry.FlagDate = DateUtil.currentDate()
+aFlagEntry.Reason = typekey.FlagEntryReason.TC_DOCTOR_SPECIALTY_UNSPECIFIED
+aBContact.addToFlagEntries(aFlagEntry)
+
+
+--- enhancements ---
+
+
+A Gosu enhancement is code that enhances the functionality of an existing type 
+Configuration developers enhance entity types and some Java classes.
+
+    For entity types, add properties and methods 
+    For Java classes, extend functionality of a base type 
+
+Enhancements are .gsx files.
+
+An entity enhancements provides aditional logic for an entity property (that's 
+either a set or a get, property get/set).
+
+"Getter properties" are used to calculate derived values, they are not declared in 
+the data model nor stored in the database. 
+
+Enhancements must be declared as follows:
+
+    enhancement ABPersonEnhancement: entity.ABPerson { ... }
+
+"Setter properties" takes a single input value and uses it to modify the  associated object. 
+The given value to set may or may not be stored in database, but they are tipically stored in
+the database. A setter property, might, for example, decide which property to set based on
+a certain input.
+
+Both setters and getters should use the same property name. The first letter must be capitalized.
+The first letter in method declarations should be in lowercase
+
+You access this properties by calling the property on the entity instance itself: eg
+
+    getter: (anABContact as ABPolicyPerson).age
+    setter: anABPerson.NewPrimaryPhone = EnteredPhoneNumber
+
+You can not only use enhancements for Gosu entities, but aswell for Java classes, like
+the default date library.
+
+
+--- gosu classes ---
+
+
+The source code is under config/gsrc 
+
+Anatomy
+
+    package code.gosu.omg
+    uses gw.api.classes
+
+    class Card {
+
+        var _isFaceUp: Boolean as isFaceUp
+        function turnFaceDown() {
+            ...
+        }
+    }
+
+There are 2 types of source files: 
+
+    enhancements (entity asociations)
+    gosu classes
+
+notes: 
+    The consturctor is not necessary for classes with only static methods.
+    You must restart the server to load new packages and classes (main menu -> build). You need to 
+        reload changed classes (main menu -> run)
+    Static classes can be referenced in widget buttons and bussines rules
+
+
+--- Partial page update ---
+
+
+PCF properties are not strictly static values; Available, Editable, Required and Visible are properties that
+can containt boolean expressions. An expression is just gosu code.
+
+There are 2 types of properties:
+
+    Dynamic property: After a user navigates to a page or clicks Update, the widget property expression is evaluated.
+    Dynamic behaviour: While a user changes business data, the widget property expression is evaluated.
+
+Dynamic behaviour requires dynamic widget properties: visibility, editability, Availability, Required.
+
+PCF partial page configuration requires a "PostOnChange" configuration. PostOnChange is available in cells, inputs,
+and InputGroups. PostOnChange have 3 properties:
+    
+    disablePostOnEnter: if evaluated to true, there is no trigger when the page is rendered    
+    onChange: gosu expression to invoke (triggered when the user edits the widget)
+    target: the target is the widget input to update (all editable data is refreshed for that input). target can be set 
+            to DATA_ONLY, the data_only option updates the values (and all editable data refreshed), but not 
+            the layout (?). Performance is greater this way.
+

@@ -90,16 +90,16 @@ Remember to passdown the root object.
 --- List views ---
 
 
-A list displays a row widgets. This is done through a row iterator, which is a function that operates upon on array of the root
+A list displays row widgets. This is done through a row iterator, which is a function that operates upon on array of the root
 object or a query result. And just like before, you can create a file (receiving a root object) or an 
 inline widget (with an inherited parent object). A row widget is composed of cell widgets. You need to add cell widgets in to the row.
 These cell widgets must reference the current object property. 
 
-For you to reference a list view panel, you can to use a PanelRef (unlike the previous section: an InputRef). You have a second
+For you to reference a list view panel, you can use a PanelRef (unlike the previous section: an InputRef). You have a second
 option, a list view input. A list view input automatically applies paging. Nonetheless you can add the toolbar. The toolbar must be
 outside the list view, and inisde the screen or page that references this view.
 
-list view panel - Row iterator - iterator
+list view panel - Row iterator - iterator - cell widgets
 
 
 --- Editable list views ---
@@ -160,7 +160,7 @@ PCFs are listed in the file tree as <ID>.<MODE>, eg:
 A location is a PCF element that a user can navigate to.
 
     pages: A single screen
-    locationGroups: is a collection of pages used  to view or modify data Each group has single info bar, actions menu, 
+    locationGroups: is a collection of pages used  to view or modify. data Each group has single info bar, actions menu, 
                     and side bar
     wizard: A wizard is an ordered collection of screens used to execute a complex business process
             It contains a single info bar, actions menu, and a side bar. It also Includes a toolbar with Back and Next buttons.
@@ -173,7 +173,7 @@ A location is a PCF element that a user can navigate to.
     entry point: reference used by widgets to navigate to a given location.
 
 Most atomic widgets have an action property that can be set to a Gosu statement
-When set, atomic widget becomes clickable When clicked, Gosu statement is executed.
+When set, atomic widget becomes clickable. When they are clicked, a Gosu statement is executed.
 
 These are the steps to enable the navigation: 
 

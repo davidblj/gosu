@@ -1,0 +1,92 @@
+
+Integration is the communication between Guidewire applications and external systems.
+
+Integration points:
+
+    Authentication: Authenticate users during sign-on
+    Document production: Create documents (such as printed policy quotes, Dunning letters, or "coverage in question" letters).
+    Document storage: Store documents received or created by the application.
+    
+    Address book: Store information for contacts used by multiple systems.
+    Policy rating: Rates a policy transaction (calculates the cost of the transaction).
+    Billing: Bills the insured for policy transactions bound by PolicyCenter.
+    Legacy policy admin: Manages policies for which PolicyCenter is not the system of record.
+    Claims: Processes claims made against policies
+    
+    Policy Admin: Contains the policies which need to be billed (and need to be cancelled if a policy becomes delinquent), 
+                 (and need to be cancelled if a policy becomes delinquent) 
+    General ledger: Tracks finances for the carrier
+    Check processing: Prints checks for disbursements (refunds) and producer commissions
+    Financial: Used to receive money from and/or send money to policy payers and producers.
+    First Notice application: Captures "first notice of loss" information, which is imported and transformed into claims.
+    Policy admin: Retrieves policy to determine what items are listed on the policy and what types of losses are covered.
+    General ledger: Tracks finances for the carrier (and must know about reserves and payments related to a claim)
+    Check processing: issues payments to claimants
+
+communication with external systems:
+
+    through files: CSV, XML and binary.
+    database tables
+    files and database tables
+    Remote procedure calls (web services and sockets)
+    Queues
+
+    
+    Types of plugins
+
+
+- A predefined plugin is a Gosu or Java class which implements a set of methods called by internal code 
+and related to fundamental application behavior.
+
+Predefined plugins may or may not interact with other systems. When predefined plugins interact
+with other systems, they are typically outbound and synchronous
+
+- web services are synchronous. (the receiver mechanism for inbound requests from external system)
+- messages are async (they are requests to external system)
+- startable plugins are mechanisms that listens for requests from an external system that communicates with 
+    Guidewire via a mechanism such as JMS "Messaging" and "Sockets". This plugins is trigered by an external
+    sytem thta processes the message asynhronously.
+- A batch process is background process that performs a periodic task independent of a user.  They can interact
+    with external systems and be triggered by a GW webservice
+   
+
+--- Gosu for integration ---
+
+
+Logging:
+
+automatic generation of getters and setters:
+
+    private var _widht: int as Height
+    ...
+    aRectangle.Height = 20
+    print(aRectangle.Height)
+
+logging goes like this: 
+
+    uses org.slf4j.Logger
+    protected var logger : Logger = PLLoggerCategory.CONFIG
+    logger.info("Rectangle.enlarge() invalid factor " + factor)
+
+Extending:
+
+    class square extends Rectangle implements ILineAndFill
+
+Blocks (Anon functions):
+
+    aContact.ContactNotes.where(\note -> note.ContactNoteType == ContactNoteType.TC_GENERAL)
+
+Sequences:
+
+    gw.api.system.database.SequenceUtil.next(minVal, seqKey);   // seqKey: unique id of this SequenceUtil
+    ....
+    SequenceUtil.next(1, seqString);                            // seqString: last generated sequence
+
+
+--- bundle ---
+
+
+A bundle is a set of in-memory entity instances that represent rows in the database. 
+
+Guidewire applications transmit and save all entity instances in a bundle to the database in a transaction 
+
