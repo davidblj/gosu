@@ -1,0 +1,46 @@
+
+A custom batch process is a batch process created by an integration developer
+
+A custom batch process Allows for periodic scheduling of work beyond what the base application provides
+Is fully configurable
+
+Can include triggers to integration points
+
+    - A custom batch process is a batch process created by an integration developer
+    - A custom batch process Allows for periodic scheduling of work beyond what the base application provides
+    - Is fully configurable and Can include triggers to integration points
+
+Common ways to execute a batch processes
+
+    - Periodically based on a schedule (the most common use)
+    - Immediately from the Internal Tools UI
+    - From an API call such as a web service or command line
+
+
+    Batch process implementation
+
+
+A ProcessesPlugin implements the IProcessesPlugin
+
+ProcessesPlugin overrides createBatchProcess()
+createBatchProcess() 
+    evaluates BatchProcessType
+    instantiates a custom batch process object from a Gosu or Java class
+    returns a batchProcess object
+
+A gosu class must extend the BatchProcessBase and override the doWork() function
+
+
+    Steps to implement custom batch process
+
+
+Add a batch process typecode to the BatchProcessType typelist
+Define typecode categories to specify the batch process execution options
+Create a new custom batch process class 
+Extends BatchProcessBase, implements a specific constructor syntax, and overrides doWork() 
+Implement and modify the ProcessesPlugin class to instantiate and return the custom batch process object
+Deploy your changes
+
+
+The processes plugin invokes the batch process class. My batch process class will do some work (contacts update), 
+

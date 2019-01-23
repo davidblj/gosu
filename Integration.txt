@@ -45,7 +45,7 @@ with other systems, they are typically outbound and synchronous
 - messages are async (they are requests to external system)
 - startable plugins are mechanisms that listens for requests from an external system that communicates with 
     Guidewire via a mechanism such as JMS "Messaging" and "Sockets". This plugins is trigered by an external
-    sytem thta processes the message asynhronously.
+    sytem thta processes the message asynchronously.
 - A batch process is background process that performs a periodic task independent of a user.  They can interact
     with external systems and be triggered by a GW webservice
    
@@ -90,3 +90,96 @@ A bundle is a set of in-memory entity instances that represent rows in the datab
 
 Guidewire applications transmit and save all entity instances in a bundle to the database in a transaction 
 
+A database transaction is a set of data manipulation statements that are acted upon as a unit.
+Either all statements succeed or none execute.
+
+There are 2 types of bundles:
+
+read only bundles are
+
+    Objects retrieved from a database query
+    Foreign key entities of a related entity already in a read-only bundle  
+
+Writable bundle are
+
+    Objects that are being edited or deleted in the user interface, an application process, or in code.
+
+There is an automatic bundle processing (UI data manipulation) and a manual bundle processing
+(like a web services and batch processes):
+
+Use new bundles to have writable bundle:
+
+    gw.transaction.Transaction. runWithNewBundle(\ newBundle -> {       // implicit bundle commit
+	    CodeBlock })
+
+    var newBundle = gw.transaction.Transaction.newBundle()
+    newBundle.commit()
+
+
+--- publishing web services ----
+
+
+Steps:
+
+    Create the package
+    Create the Gosu class
+    Add the web service annotations
+    Add methods
+    Method that modify Guidewire data must create and commit a bundle
+    Deploy your changes
+
+Located under:
+
+    gsrc/<app-package/webservice/
+
+    @WsiWebService 
+    @WsiPermissions({"abedit"})         // user permission
+    @WsiAvailability(MAINTENANCE)       // 
+    @WsiGenInToolkit 
+
+    class ContactAPI {
+
+        function doesContactExist (publicId : String ) : boolean {
+
+            // or as an alternative, use a 
+            var queryObj = gw.api.database.Query.make(ABContact) 
+            queryObj.compare("PublicID", Equals, publicId) 
+            return (not queryObj.select().Empty) 
+        }        
+    }
+
+    return types:
+
+        Simple values: Booleans, numbers, strings, lists, arrays
+        XML types
+        Gosu objects (final classes)
+
+Deploy happens when consumer requests WSDL (web specific domain language, routes).
+
+    Client requests WSDL: http://<host>:<port>/<appcode>/ws/<package>/<class>?WSDL 
+
+    http://<machine>:<port>/<appcode>/ws
+    localhost:8880/ab/ws
+
+
+--- Consuming web services ---
+
+Four possible binding styles
+RPC encoded <- deprecated support for RPC web services
+RPC literal
+Document encoded
+Document literal (WS-I)
+
+Webservice collections (WSC) Connect to WS-I web services
+RPCE external web service Consists of the external web service's WSDL.
+
+
+    Steps to consume a service
+
+Create a new web service endpoint
+Load the resources
+Deploy your changes
+Reference the web service in Gosu as needed
+
+
+file:////C:/Users/davihabo/Downloads/Recursos

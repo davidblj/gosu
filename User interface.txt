@@ -189,3 +189,4 @@ Locations have methods used to navigate to them
     push(): Renders location in same frame as source widget and retains previous location so that it can be returned to.
 
 For a more detailed resource, take a look at the "location comparisons.png" file. 
+

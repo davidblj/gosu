@@ -195,6 +195,7 @@ You access this properties by calling the property on the entity instance itself
 You can not only use enhancements for Gosu entities, but aswell for Java classes, like
 the default date library.
 
+Enhancements are located in 
 
 --- gosu classes ---
 
@@ -230,7 +231,7 @@ notes:
 
 
 PCF properties are not strictly static values; Available, Editable, Required and Visible are properties that
-can containt boolean expressions. An expression is just gosu code.
+can containt boolean expressions. An expression is just "gosu code".
 
 There are 2 types of properties:
 

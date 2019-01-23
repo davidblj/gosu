@@ -1,6 +1,7 @@
 commands:   gwta studio
             gwta regen-dictionary  ()
             gwta regen-gosudoc  (build/gosudoc)
+            gwab regen-wsi-local  (build wsdl)
 
 carlmeba/Martes2018
 
@@ -57,7 +58,7 @@ Types:
 
 Foreign key stores a reference to a related object in the data model
 Array key fields: stores references to a set of related objects in the data model. They are not store in the database and
- they are populated at runtime by quieries 
+ they are populated at runtime by queries 
 Typelist and typekey: a type key references a value in a type list. A type list is a predefiend list of values.
 
 Referencing:
@@ -101,8 +102,8 @@ You can't make extensions for entities through the GUI for ETI and ETX files. Yo
     ETI and EIX files are application exclusive.
     ETI FILES are platform exclusive.
 
-Arrays: Collection of pointers to instances of some other entity that is maintained by code during runtime Requires reverse foreign key
-If entity A has array of entity B, then entity B must have foreign key pointing to entity A.
+Arrays: Collection of pointers to instances of some other entity that is maintained by code during runtime. Arrays requires a reverse foreign key
+If entity A has array of entity B, then entity B must have a foreign key pointing to entity A.
 
 Entity names: Useful for displaying names in user interface. Entity names exist for many base and application entities.
 arrays.
@@ -150,7 +151,7 @@ must edit the xml directly. You must name the new entity with a "*_Ext" posfix.
 --- typelist ---
 
 
-A typelist is a list of defined values. Defined values often used to constrain user input. When rendered in UI, typically
+A typelist is a list of defined values. Defined values often used to constrain user input. When rendered in UI, it typically
 appears as dropdown list. 
 
 - located under the Metadata (tti and tix extensions) and Extensions (tti and ttx extensions) Typelist folder. The metadata 
@@ -241,3 +242,9 @@ following these steps you will reaseure that everything you did is ok (in other 
 
     build -> make project (compiles modified files).
     ALT + SHIFT + L
+
+
+
+
+
+file:///C:/Guidewire/ContactManagerTrainingApp/modules/configuration/gsrc/sura/ab/wsc

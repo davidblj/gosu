@@ -59,7 +59,10 @@ Integration
 
 
 
-
+- begun from: detail views. 
+- stopped in editable list views.
 
 
 TODO: answer every question in the presentations
+
+sura.suite.gw.webservice.SuraConfigurationProvider

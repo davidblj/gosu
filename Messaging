@@ -1,0 +1,249 @@
+
+Messages are stored in a database:
+
+    Unsent messages
+    Sent messages awaiting acknowledgement 
+    Retryable Error
+    Sent and acknowledged with an error messages
+
+Components of messaging:
+
+Event 
+    - A notification of a change
+    - May be of interest to an external system
+    - Triggers Event Fired rule set
+    
+Event Fired rule set
+    - Called for each messaging event
+    - Generates message payload
+    - Creates message
+
+Message Payload
+    - Formatted string such as CSV, XML, or JSON
+
+Message
+    - Information, including payload, to send to an external system in response to an event
+
+Destination
+    - Represents external system that receives sent messages
+
+Messaging plugins
+    - Transform payload
+    - Sends the message
+    - Process synchronous and asynchronous responses from the external system
+
+
+--- Message triggering ---
+
+
+The flow goes like this:
+    An entity aware table fires a named "event". A "named" destination listens for certain "named" events (a destinations creates a message context object
+    for each event fired). An event Fired rule stores the details in a message database table (a business rule that process message context objects) and creates the
+    real message with its payload.
+
+    You create a message from a message context like this:
+        messageContext.createMessage(paylaod)
+
+A destination needs a "Transport" Plugin. Requests (payload transformations) and reply plugins (asynchronous acknowledgement) are optional.  
+
+There are 3 types of ruleset categories:
+
+    EventMessage
+    Preupdate
+    Validation
+
+A rule set executes an action when a certain condition is set (see more in "business rules"). An "event fired rule set" is responsible for creating messages and generating
+payloads (?)
+
+    How is Testing performed: use a destination into the console output
+
+
+--- Message payload ---
+
+
+All activity from the triggering event up to the creation of the message itself takes place in the same transaction
+If any of this activity, including payload generation, throws an exception, the transaction is rolled back
+All work, including the operation that triggered messaging, is undone.
+
+You mold a message response through a gosu template (just as a plain string dynamically generated text) or an XML model.
+
+
+--- Sending messages ---
+
+
+A destination calls for a message plugin to:
+
+    - Handle the late binding of a generated messages (replacing of strings)
+    - Send a message
+    - Acknowledge a received message
+
+a Request Plugin to
+
+    - Handles the late binding of an message about to be sent
+
+a Transport Plugin to 
+
+    - Send the message ?
+    - Acknowledges synchronous replies
+
+Reply Plugin
+
+    - Acknowledges a received message
+
+The flow goes like this:
+
+After the message has been persisted (?), the request plugin transform the payload, and sends the message through the transport plugin.
+
+The message is sent to the external system with a SenderRefId. The sender ref is set by the request plugin through late binding. When the external system responds back,
+the transport plugin handles the acknowledgement with that very same "SenderRefId".
+
+Request plugin
+    before send (method override)
+    implement MessageRequest
+
+Transport plugin
+    send (method override) - here you can send it into a web service, or the console itself. You can even acknowledge the message in the body of this method (the synchronous way)
+    implement MessageTransport
+
+Steps:
+
+    Create the request plugin class
+    Implement the  MessageRequest  interface
+    Implement   beforeSend() as needed
+    Create the plugin registry
+    Configure the plugin
+    Specify the destination plugin
+    Deploy your changes
+
+The system will retry when the external system reports an error, or when a exception is thrown in "send" or "implement" methods.
+
+Sometimes messages must be sent in order. Guideware may force something called safe ordering. This messaging order works for entities.
+Meaning that multiple requests can be send but only by 1 request per entity. <- this is foggy 
+
+
+--- Acknowledging ---
+
+
+The external system may respond in 4 ways: ACK, error, duplicate message, no response
+
+2 kind of message tables:
+
+The message table:
+
+    Messages that… 
+        Have yet to be sent
+        Require manual intervention
+    Sent messages that are…
+        Pending acknowledgement
+        Waiting to be retried
+
+The message history table:
+
+    Positively acknowledged messages
+    Skipped messages
+
+Flow:
+
+Guidewire application response to ACK:
+
+    Moves the message from Message to MessageHistory
+    Changes the status to reflect acknowledgement
+
+Messaging exception during a send request:
+
+    Initial "send" from Guidewire transport throws an exception
+    Message stays in Message table 
+    Message status stays as Pending send (1)
+    Guidewire retries to send the message until reaching the maximum number of retries as defined in the destination
+    At maximum retries, the Guidewire suspends the destination
+
+Error received from external system:
+
+    Error from external system is a NACK
+        Temporarily cannot process the successfully received message
+        Reports error, a negative acknowledgement (NACK)
+        Message stays in Message table 
+        Guidewire assigns message status of retryable error 
+
+    Retry scenario
+        Manual retry from administrator or integration code to resend message
+
+When Guideware is retrying an error
+
+    Message is moved to MessageHistory
+    A copy of the message is created and sent
+        References the same event and triggering entity
+        Uses a different SenderRefID
+        Incremented retry field by 1
+
+For duplicated messages:
+
+    After the ACK acknowledgement, Guideware increments the duplicate field in the messsage history table.
+
+No response:
+
+    Guidewire application response
+        Keeps the message in the Message table
+    Consider batch process to purge message table and avoid manual intervention
+        Apply logic for overdue messages
+
+acknowledgement mechanism can be sync or async. 
+
+    sync through messages (using the transport plugin) and async through an API (web service or socket plugin) or via a listener o polling mechanism (reply plugin).
+
+This is how you ack the report:
+
+  message was successfully processed
+   
+  aMessage.reportAck() 
+  // make additional changes to triggering entity 
+  var relatedContact = aMessage.MessageRoot as ABContact 
+
+  relatedContact.LegalCaseReportStatus = 
+         LegalCaseReportStatus.TC_REQUESTED_RECEIVED
+   relatedContact.LastLegalCaseReportDate = 
+          DateUtil.currentDate() 
+
+And the retry behaviour is defined by the message destination (take a look at the pptx)
+
+This is how:
+
+    Issue a call to retry (yes, but where ?!):
+
+        aMessage.reportError(retryTime)
+
+    Report that all max retries have been performed with a table message defined error:
+
+        message.reportError(errorCategory)
+
+
+Remember, there are 2 types of errors: one that issued before a message is send, and one that is reported back by the
+the external system.  In the latter, you handle that exception through code, in the former, guideware is the one that
+handles it. The same goes for the number of retries. Keep in mind that the SenderRefId is different for each retry 
+on an external system report, whereas in an internal issue, it will always re-try with the same RefId.
+
+Duplicates must also be handled through code.
+
+    aMessage.reportDuplicate()
+
+The sync acknowledgment (done in the transport plugin) is acomplished like sO:
+
+   aMessage.reportAck() // report acknowledge
+    if (isVerified) { 
+         (aMessage.MessageRoot as BankAccount).IsVerified =
+         VerificationStatus.TC_VERIFIED 
+    } else { 
+         (aMessage.MessageRoot as BankAccount).IsVerified =
+         VerificationStatus.TC_INVALID 
+    }
+
+When is an async acknowledgement, you code the acknowledgement in your service code. <- take a look at the presentations for code
+samples.
+
+You may also use a reply plugin, the reply plugin Acknowledges message asynchronously through a listener queue:
+
+    Some key notes for the code in the presentations: 
+        you have to report the acknowledge and you have to acknowledge the message (?)
+        the method initTools is executed during startup
+        you must implement a message reply and a message listener
+
